@@ -1,8 +1,4 @@
-import {
-    focusOnceClearOfKeyboard,
-    labelContentWithAccessKey,
-    trackKeyboardDismissal,
-} from '../../src/ui/EditTaskHelpers';
+import { focusOnceClearOfKeyboard, labelContentWithAccessKey } from '../../src/ui/EditTaskHelpers';
 
 describe('labelContentWithAccessKey() tests', () => {
     it.each([
@@ -214,77 +210,5 @@ describe('focusOnceClearOfKeyboard() tests', () => {
 
         await expect(focused).resolves.toBeUndefined();
         expect(document.activeElement).not.toBe(fieldEl);
-    });
-});
-
-describe('trackKeyboardDismissal() tests', () => {
-    // jsdom has no visualViewport, so supply one whose height can be changed to open and close the keyboard.
-    class FakeViewport extends EventTarget {
-        width = 400;
-        height = 800;
-
-        resize(width: number, height: number) {
-            this.width = width;
-            this.height = height;
-            this.dispatchEvent(new Event('resize'));
-        }
-    }
-
-    let viewport: FakeViewport;
-    let modalEl: HTMLElement;
-    let stopTracking: () => void;
-
-    beforeEach(() => {
-        viewport = new FakeViewport();
-        Object.defineProperty(window, 'visualViewport', { value: viewport, configurable: true });
-        modalEl = document.body.createDiv();
-        stopTracking = trackKeyboardDismissal(modalEl);
-    });
-
-    afterEach(() => {
-        stopTracking();
-        modalEl.remove();
-        Object.defineProperty(window, 'visualViewport', { value: undefined, configurable: true });
-    });
-
-    const isDismissed = () => modalEl.classList.contains('tasks-keyboard-dismissed');
-
-    it('should not mark the modal before the keyboard has been seen', () => {
-        viewport.resize(400, 790);
-        expect(isDismissed()).toBe(false);
-    });
-
-    it('should mark the modal once the keyboard closes, and unmark it when the keyboard reopens', () => {
-        viewport.resize(400, 450);
-        expect(isDismissed()).toBe(false);
-
-        viewport.resize(400, 800);
-        expect(isDismissed()).toBe(true);
-
-        viewport.resize(400, 450);
-        expect(isDismissed()).toBe(false);
-    });
-
-    it('should unmark the modal when a field takes focus', () => {
-        viewport.resize(400, 450);
-        viewport.resize(400, 800);
-
-        const input = modalEl.createEl('input');
-        input.focus();
-
-        expect(isDismissed()).toBe(false);
-    });
-
-    it('should not treat rotating the screen as the keyboard opening', () => {
-        viewport.resize(800, 400);
-        viewport.resize(800, 400);
-        expect(isDismissed()).toBe(false);
-    });
-
-    it('should stop tracking when asked', () => {
-        stopTracking();
-        viewport.resize(400, 450);
-        viewport.resize(400, 800);
-        expect(isDismissed()).toBe(false);
     });
 });

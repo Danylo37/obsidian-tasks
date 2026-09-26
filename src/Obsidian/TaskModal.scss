@@ -49,8 +49,7 @@
     --tasks-keyboard-space-allowance: clamp(220px, 35vh, 360px);
 }
 
-// The keyboard can be closed while a field keeps focus: see trackKeyboardDismissal() in EditTaskHelpers.ts.
-.is-mobile .tasks-edit-modal-container:not(.tasks-keyboard-dismissed):has(textarea:focus, input[type='text']:focus) {
+.is-mobile .tasks-edit-modal-container:has(textarea:focus, input[type='text']:focus) {
     .modal-content {
         padding-bottom: var(--tasks-keyboard-space-allowance);
     }
