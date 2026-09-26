@@ -71,6 +71,18 @@ The description box can be enlarged by dragging its corner. Multi-line text can 
 > [!released]
 Description field became resizable in Tasks 2.0.0.
 
+#### Auto-suggest for tags and links
+
+While typing in the description, Tasks suggests:
+
+- existing tags from your vault, after typing `#`,
+- notes to link to, after typing `[[`.
+
+Use the `Up` and `Down` arrow keys to choose a suggestion, `Enter` or `Tab` to insert it, and `Esc` to close the list. Clicking a suggestion also inserts it.
+
+> [!released]
+Tag and link suggestions in the description were introduced in Tasks X.Y.Z.
+
 ### Priority
 
 See [[Priority|priority]].
@@ -269,9 +281,9 @@ To close the modal and cancel your edits, do one of:
 
 ## Known limitations
 
-### No support for Auto Complete in the Description
+### Limited Auto Complete in the Description
 
-The Description field in the 'Create or edit Task' Modal does not yet support Obsidian's Auto Complete facility to help with adding tags, formatting, linking to other notes and so on.
+The Description field in the 'Create or edit Task' Modal suggests [[#Auto-suggest for tags and links|tags and links]], but does not support the rest of Obsidian's editor features, such as formatting, links to headings and blocks, or aliases.
 
 We are tracking this in [issue #1763](https://github.com/obsidian-tasks-group/obsidian-tasks/issues/1763).
 

@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { computePosition, flip, offset, shift, size } from '@floating-ui/dom';
+    import { onMount, tick } from 'svelte';
     import { defaultEditModalShowSettings } from '../Config/EditModalShowSettings';
 
     import { TASK_FORMATS, getSettings } from '../Config/Settings';
@@ -8,6 +9,14 @@
     import { settingsStore } from './SettingsStore';
     import DateEditor from './DateEditor.svelte';
     import Dependency from './Dependency.svelte';
+    import {
+        type DescriptionSuggestSources,
+        type DescriptionSuggestTrigger,
+        applyDescriptionSuggestion,
+        filterDescriptionSuggestions,
+        findDescriptionSuggestTrigger,
+        noDescriptionSuggestSources,
+    } from './DescriptionSuggestHelpers';
     import { EditableTask } from './EditableTask';
     import { focusOnceClearOfKeyboard, labelContentWithAccessKey } from './EditTaskHelpers';
     import PriorityEditor from './PriorityEditor.svelte';
@@ -19,6 +28,7 @@
     export let onSubmit: (updatedTasks: Task[]) => void | Promise<void>;
     export let statusOptions: Status[];
     export let allTasks: Task[];
+    export let descriptionSuggestSources: DescriptionSuggestSources = noDescriptionSuggestSources;
 
     const {
         // NEW_TASK_FIELD_EDIT_REQUIRED
@@ -31,6 +41,11 @@
     } = TASK_FORMATS.tasksPluginEmoji.taskSerializer.symbols;
 
     let descriptionInput: HTMLTextAreaElement;
+    let descriptionSuggestDropdown: HTMLElement;
+    let descriptionSuggestTrigger: DescriptionSuggestTrigger | null = null;
+    let descriptionSuggestions: string[] = [];
+    let descriptionSuggestIndex = 0;
+    const descriptionSuggestCandidates: Partial<Record<DescriptionSuggestTrigger['type'], string[]>> = {};
 
     let editableTask = EditableTask.fromTask(task, allTasks);
 
@@ -81,7 +96,93 @@
         onSubmit([]);
     };
 
+    const _updateDescriptionSuggestions = () => {
+        const cursor = descriptionInput.selectionStart;
+        descriptionSuggestTrigger =
+            cursor === descriptionInput.selectionEnd
+                ? findDescriptionSuggestTrigger(editableTask.description, cursor)
+                : null;
+        if (!descriptionSuggestTrigger) {
+            descriptionSuggestions = [];
+            return;
+        }
+        const { type, query } = descriptionSuggestTrigger;
+        const candidates = (descriptionSuggestCandidates[type] ??=
+            descriptionSuggestSources[type === 'tag' ? 'tags' : 'links']());
+        descriptionSuggestions = filterDescriptionSuggestions(candidates, query, 20);
+        descriptionSuggestIndex = 0;
+    };
+
+    const _closeDescriptionSuggestions = () => {
+        descriptionSuggestTrigger = null;
+        descriptionSuggestions = [];
+    };
+
+    const _selectDescriptionSuggestion = async (value: string) => {
+        if (!descriptionSuggestTrigger) return;
+        const result = applyDescriptionSuggestion(
+            editableTask.description,
+            descriptionInput.selectionStart,
+            descriptionSuggestTrigger,
+            value,
+        );
+        editableTask.description = result.text;
+        _closeDescriptionSuggestions();
+        await tick();
+        descriptionInput.focus();
+        descriptionInput.setSelectionRange(result.cursor, result.cursor);
+    };
+
+    const _onDescriptionSuggestKeyDown = (e: KeyboardEvent): boolean => {
+        if (descriptionSuggestions.length === 0 || e.isComposing) return false;
+        switch (e.key) {
+            case 'ArrowUp':
+            case 'ArrowDown': {
+                const step = e.key === 'ArrowUp' ? -1 : 1;
+                const count = descriptionSuggestions.length;
+                descriptionSuggestIndex = (descriptionSuggestIndex + step + count) % count;
+                const item = descriptionSuggestDropdown?.getElementsByTagName('li')[descriptionSuggestIndex];
+                item?.scrollIntoView?.({ block: 'nearest' });
+                break;
+            }
+            case 'Enter':
+            case 'Tab':
+                _selectDescriptionSuggestion(descriptionSuggestions[descriptionSuggestIndex]);
+                break;
+            case 'Escape':
+                _closeDescriptionSuggestions();
+                e.stopPropagation();
+                break;
+            default:
+                return false;
+        }
+        e.preventDefault();
+        return true;
+    };
+
+    const _positionDescriptionSuggestDropdown = (input: HTMLElement, dropdown: HTMLElement) => {
+        if (!input || !dropdown) return;
+        computePosition(input, dropdown, {
+            middleware: [
+                offset(6),
+                shift(),
+                flip(),
+                size({
+                    apply({ rects }) {
+                        dropdown.style.width = `${rects.reference.width}px`;
+                    },
+                }),
+            ],
+        }).then(({ x, y }) => {
+            dropdown.style.left = `${x}px`;
+            dropdown.style.top = `${y}px`;
+        });
+    };
+
+    $: _positionDescriptionSuggestDropdown(descriptionInput, descriptionSuggestDropdown);
+
     const _onDescriptionKeyDown = (e: KeyboardEvent) => {
+        if (_onDescriptionSuggestKeyDown(e)) return;
         if (e.key === 'Enter' && !e.isComposing) {
             e.preventDefault();
             if (formIsValid) _onSubmit();
@@ -151,9 +252,30 @@ Availability of access keys:
             placeholder="Take out the trash"
             accesskey={accesskey('t')}
             on:keydown={_onDescriptionKeyDown}
+            on:input={_updateDescriptionSuggestions}
+            on:click={_updateDescriptionSuggestions}
+            on:keyup={(e) =>
+                ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key) && _updateDescriptionSuggestions()}
+            on:blur={_closeDescriptionSuggestions}
             on:paste={_removeLinebreaksFromDescription}
             on:drop={_removeLinebreaksFromDescription}
         />
+        {#if descriptionSuggestions.length !== 0}
+            <ul class="task-dependency-dropdown tasks-modal-description-suggest" bind:this={descriptionSuggestDropdown}>
+                {#each descriptionSuggestions as suggestion, index}
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <li
+                        class:selected={index === descriptionSuggestIndex}
+                        on:mousedown|preventDefault={() => _selectDescriptionSuggestion(suggestion)}
+                        on:mouseenter={() => (descriptionSuggestIndex = index)}
+                    >
+                        <div class="dependency-name">
+                            {descriptionSuggestTrigger?.type === 'tag' ? `#${suggestion}` : suggestion}
+                        </div>
+                    </li>
+                {/each}
+            </ul>
+        {/if}
     </section>
 
     <!-- --------------------------------------------------------------------------- -->
