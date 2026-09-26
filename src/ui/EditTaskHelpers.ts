@@ -144,3 +144,54 @@ function nextAnimationFrame() {
         }
     });
 }
+
+/** How much shorter than its tallest the viewport must be for the software keyboard to count as open. */
+const keyboardOpenThreshold = 150;
+
+/**
+ * Mark the modal with 'tasks-keyboard-dismissed' while the software keyboard has been closed, but a text field
+ * still has focus.
+ *
+ * TaskModal.scss adds room for the keyboard whenever a text field has focus. On Android the keyboard can be
+ * closed without the field losing focus, and that room would otherwise stay, leaving the Apply and Cancel
+ * buttons stuck part way up the screen.
+ *
+ * The keyboard shrinks the visual viewport, so compare it to the tallest it has been. The mark is only set
+ * once the keyboard has been seen open, and cleared as soon as it reopens or another field takes focus, so
+ * opening the keyboard behaves exactly as before.
+ *
+ * @returns a function that stops tracking.
+ */
+export function trackKeyboardDismissal(modalEl: HTMLElement): () => void {
+    const viewport = modalEl.ownerDocument.defaultView?.visualViewport;
+    if (!viewport) {
+        return () => {};
+    }
+
+    const dismissedClass = 'tasks-keyboard-dismissed';
+    let { width, height: tallest } = viewport;
+    let keyboardWasOpen = false;
+
+    const onResize = () => {
+        if (viewport.width !== width) {
+            // Rotated: the old height no longer says anything about the keyboard.
+            width = viewport.width;
+            tallest = viewport.height;
+        }
+        tallest = Math.max(tallest, viewport.height);
+
+        const keyboardOpen = viewport.height < tallest - keyboardOpenThreshold;
+        if (keyboardOpen || keyboardWasOpen) {
+            modalEl.classList.toggle(dismissedClass, !keyboardOpen);
+        }
+        keyboardWasOpen = keyboardOpen;
+    };
+    const onFocusIn = () => modalEl.classList.remove(dismissedClass);
+
+    viewport.addEventListener('resize', onResize);
+    modalEl.addEventListener('focusin', onFocusIn);
+    return () => {
+        viewport.removeEventListener('resize', onResize);
+        modalEl.removeEventListener('focusin', onFocusIn);
+    };
+}

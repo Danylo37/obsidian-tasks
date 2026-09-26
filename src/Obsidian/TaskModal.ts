@@ -6,6 +6,7 @@ import type { Task } from '../Task/Task';
 import { StatusRegistry } from '../Statuses/StatusRegistry';
 import { Status } from '../Statuses/Status';
 import type { DescriptionSuggestSources } from '../ui/DescriptionSuggestHelpers';
+import { trackKeyboardDismissal } from '../ui/EditTaskHelpers';
 import { OptionsModal } from './OptionsModal';
 
 export interface TaskModalParams {
@@ -23,6 +24,7 @@ export class TaskModal extends Modal {
     public readonly onSubmit: (updatedTasks: Task[]) => void;
     public readonly allTasks: Task[];
     private _editTaskComponent: EditTask | undefined;
+    private _stopTrackingKeyboard: (() => void) | undefined;
 
     constructor({ app, task, onSaveSettings, onSubmit, onCancel, allTasks }: TaskModalParams) {
         super(app);
@@ -43,6 +45,7 @@ export class TaskModal extends Modal {
     public onOpen(): void {
         this.titleEl.setText('Create or edit Task');
         this.modalEl.addClass('tasks-edit-modal-container');
+        this._stopTrackingKeyboard = trackKeyboardDismissal(this.modalEl);
 
         const optionsButton = this.modalEl.createEl('button', {
             cls: [
@@ -116,6 +119,8 @@ export class TaskModal extends Modal {
     }
 
     public onClose(): void {
+        this._stopTrackingKeyboard?.();
+        this._stopTrackingKeyboard = undefined;
         this._editTaskComponent?.$destroy();
         this._editTaskComponent = undefined;
         const { contentEl } = this;
