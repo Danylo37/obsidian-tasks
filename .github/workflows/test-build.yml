@@ -23,7 +23,7 @@ jobs:
     - name: Set test version
       id: version
       run: |
-        version=$(node -p "require('./manifest.json').version")-autocomplete.${{ github.run_number }}
+        version=$(node -p "require('./manifest.json').version")-test.${{ github.run_number }}
         node -e "const fs = require('fs'); const m = require('./manifest.json'); m.version = '$version'; fs.writeFileSync('manifest.json', JSON.stringify(m, null, 2) + '\n');"
         echo "version=$version" >> "$GITHUB_OUTPUT"
 
