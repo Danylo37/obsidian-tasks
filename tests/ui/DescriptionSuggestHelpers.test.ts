@@ -2,6 +2,7 @@ import {
     applyDescriptionSuggestion,
     filterDescriptionSuggestions,
     findDescriptionSuggestTrigger,
+    splitLinkText,
 } from '../../src/ui/DescriptionSuggestHelpers';
 
 function triggerAtEnd(text: string) {
@@ -77,5 +78,14 @@ describe('applyDescriptionSuggestion', () => {
 
     it('should not touch a later link', () => {
         expect(apply('[[a and [[b]]', 3, 'abc')).toEqual({ text: '[[abc]] and [[b]]', cursor: 7 });
+    });
+});
+
+describe('splitLinkText', () => {
+    it.each([
+        ['Note', { name: 'Note', folder: '' }],
+        ['Projects/Steam/01 Plan', { name: '01 Plan', folder: 'Projects/Steam' }],
+    ])('should split "%s"', (linkText, expected) => {
+        expect(splitLinkText(linkText)).toEqual(expected);
     });
 });
