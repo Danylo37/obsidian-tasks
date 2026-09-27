@@ -38,7 +38,8 @@
 }
 
 // Long note names and paths scroll sideways instead of being cut off.
-.tasks-modal-description-suggest li .dependency-name {
+// Doubled class to outrank the ellipsis rule for the same element in Dependency.scss.
+.task-dependency-dropdown.tasks-modal-description-suggest li .dependency-name {
     overflow-x: auto;
     text-overflow: clip;
     scrollbar-width: none;
