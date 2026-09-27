@@ -1,10 +1,11 @@
-import { type App, setIcon } from 'obsidian';
+import { type App, getAllTags, setIcon } from 'obsidian';
 import { Modal } from 'obsidian';
 
 import EditTask from '../ui/EditTask.svelte';
 import type { Task } from '../Task/Task';
 import { StatusRegistry } from '../Statuses/StatusRegistry';
 import { Status } from '../Statuses/Status';
+import type { DescriptionSuggestSources } from '../ui/DescriptionSuggestHelpers';
 import { OptionsModal } from './OptionsModal';
 
 export interface TaskModalParams {
@@ -73,8 +74,31 @@ export class TaskModal extends Modal {
                 statusOptions: statusOptions,
                 onSubmit: this.onSubmit,
                 allTasks: this.allTasks,
+                descriptionSuggestSources: this.descriptionSuggestSources(),
             },
         });
+    }
+
+    private descriptionSuggestSources(): DescriptionSuggestSources {
+        const { metadataCache, vault } = this.app;
+        const sourcePath = this.task.taskLocation.path;
+        return {
+            tags: () => {
+                const tags = new Set<string>();
+                for (const file of vault.getMarkdownFiles()) {
+                    const cache = metadataCache.getFileCache(file);
+                    for (const tag of (cache && getAllTags(cache)) ?? []) {
+                        tags.add(tag.slice(1));
+                    }
+                }
+                return [...tags].sort((a, b) => a.localeCompare(b));
+            },
+            links: () =>
+                vault
+                    .getMarkdownFiles()
+                    .map((file) => metadataCache.fileToLinktext(file, sourcePath))
+                    .sort((a, b) => a.localeCompare(b)),
+        };
     }
 
     /**

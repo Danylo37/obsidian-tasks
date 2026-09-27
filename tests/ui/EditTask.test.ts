@@ -839,3 +839,61 @@ describe('Buttons in the modal on mobile', () => {
         await expect(fireEvent.mouseDown(deleteButton)).resolves.toBe(false);
     });
 });
+
+describe('Description auto-suggest', () => {
+    function renderWithSuggestions(onSubmit: (updatedTasks: Task[]) => void = () => {}) {
+        const task = new TaskBuilder().description('').build();
+        const { result, container } = renderAndCheckModal(task, onSubmit);
+        result.component.$set({
+            descriptionSuggestSources: { tags: () => ['home', 'shopping'], links: () => ['My Note', 'Other'] },
+        });
+        const description = getAndCheckRenderedDescriptionElement(container);
+        return { container, description };
+    }
+
+    async function typeInDescription(description: HTMLInputElement, text: string) {
+        description.value = text;
+        description.setSelectionRange(text.length, text.length);
+        await fireEvent.input(description);
+    }
+
+    function suggestionTexts(container: HTMLElement) {
+        return Array.from(container.querySelectorAll('.tasks-modal-description-suggest li')).map((li) =>
+            li.textContent?.trim(),
+        );
+    }
+
+    it('should suggest and insert a tag with Enter, without submitting', async () => {
+        const onSubmit = jest.fn();
+        const { container, description } = renderWithSuggestions(onSubmit);
+
+        await typeInDescription(description, 'buy #sho');
+        expect(suggestionTexts(container)).toEqual(['#shopping']);
+
+        await fireEvent.keyDown(description, { key: 'Enter' });
+        await waitFor(() => expect(description.value).toEqual('buy #shopping '));
+        expect(suggestionTexts(container)).toEqual([]);
+        expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('should suggest and insert a link, navigating with arrow keys', async () => {
+        const { container, description } = renderWithSuggestions();
+
+        await typeInDescription(description, 'read [[');
+        expect(suggestionTexts(container)).toEqual(['My Note', 'Other']);
+
+        await fireEvent.keyDown(description, { key: 'ArrowDown' });
+        await fireEvent.keyDown(description, { key: 'Tab' });
+        await waitFor(() => expect(description.value).toEqual('read [[Other]]'));
+    });
+
+    it('should close suggestions with Escape', async () => {
+        const { container, description } = renderWithSuggestions();
+
+        await typeInDescription(description, '#');
+        expect(suggestionTexts(container)).toEqual(['#home', '#shopping']);
+
+        await fireEvent.keyDown(description, { key: 'Escape' });
+        expect(suggestionTexts(container)).toEqual([]);
+    });
+});
