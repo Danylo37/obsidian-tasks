@@ -69,3 +69,11 @@ export function applyDescriptionSuggestion(
     const before = `${start}#${value.replace(/^#/, '')} `;
     return { text: before + after.replace(/^ /, ''), cursor: before.length };
 }
+
+/**
+ * Split link text into the note name and its folder, so a long path does not hide which note it is.
+ */
+export function splitLinkText(linkText: string): { name: string; folder: string } {
+    const slash = linkText.lastIndexOf('/');
+    return { name: linkText.slice(slash + 1), folder: linkText.slice(0, Math.max(slash, 0)) };
+}

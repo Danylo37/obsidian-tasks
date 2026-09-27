@@ -16,6 +16,7 @@
         filterDescriptionSuggestions,
         findDescriptionSuggestTrigger,
         noDescriptionSuggestSources,
+        splitLinkText,
     } from './DescriptionSuggestHelpers';
     import { EditableTask } from './EditableTask';
     import { focusOnceClearOfKeyboard, labelContentWithAccessKey } from './EditTaskHelpers';
@@ -270,7 +271,15 @@ Availability of access keys:
                         on:mouseenter={() => (descriptionSuggestIndex = index)}
                     >
                         <div class="dependency-name">
-                            {descriptionSuggestTrigger?.type === 'tag' ? `#${suggestion}` : suggestion}
+                            {#if descriptionSuggestTrigger?.type === 'tag'}
+                                #{suggestion}
+                            {:else}
+                                {@const { name, folder } = splitLinkText(suggestion)}
+                                {name}
+                                {#if folder}
+                                    <span class="tasks-modal-description-suggest-folder">{folder}</span>
+                                {/if}
+                            {/if}
                         </div>
                     </li>
                 {/each}

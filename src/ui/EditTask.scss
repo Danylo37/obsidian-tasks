@@ -37,6 +37,23 @@
     }
 }
 
+// Long note names and paths scroll sideways instead of being cut off.
+.tasks-modal-description-suggest li .dependency-name {
+    overflow-x: auto;
+    text-overflow: clip;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.tasks-modal-description-suggest-folder {
+    margin-left: 8px;
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+}
+
 .tasks-modal-priority-section {
     display: grid;
     grid-template-columns: 6em auto auto auto;
