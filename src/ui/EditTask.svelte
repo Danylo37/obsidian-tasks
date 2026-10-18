@@ -260,11 +260,12 @@ Availability of access keys:
             on:blur={_closeDescriptionSuggestions}
             on:paste={_removeLinebreaksFromDescription}
             on:drop={_removeLinebreaksFromDescription}
-        />
+        ></textarea>
         {#if descriptionSuggestions.length !== 0}
             <ul class="task-dependency-dropdown tasks-modal-description-suggest" bind:this={descriptionSuggestDropdown}>
                 {#each descriptionSuggestions as suggestion, index}
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
                     <li
                         class:selected={index === descriptionSuggestIndex}
                         on:mousedown|preventDefault={() => _selectDescriptionSuggestion(suggestion)}

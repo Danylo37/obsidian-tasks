@@ -19,6 +19,44 @@ interface TaskDescriptionMatch {
 
 type TaskDescriptionMatcher = (description: string) => TaskDescriptionMatch | null;
 
+interface ScoredTaskMatch {
+    task: Task;
+    score: number;
+}
+
+/**
+ * Finds and returns tasks that match a given description query.
+ *
+ * The actual search behaviour depends on the global values of these settings:
+ * - Settings.quickSearch
+ * - Settings.globalQuery
+ * - Settings.presets
+ *
+ * @param {readonly Task[]} tasks - A list of tasks to be searched.
+ * @param {string} query - The description query to search for within the tasks.
+ * @return {Task[]} An array of tasks that match the given query, sorted accordingly.
+ */
+export function findTasksByDescription(tasks: readonly Task[], query: string): Task[] {
+    const matchDescription = createDescriptionMatcher(query);
+    if (matchDescription === null) {
+        return [];
+    }
+
+    const searchInfo = SearchInfo.fromAllTasks([...tasks]);
+
+    const matches = findTaskMatches(tasks, searchInfo, matchDescription);
+
+    return sortTaskMatches(matches, searchInfo).map((match) => match.task);
+}
+
+// -----------------------------------------------------------------------
+// Helper functions for checking eligibility, independent of query string.
+// -----------------------------------------------------------------------
+
+function shouldIncludeTaskInSearch(task: Task): boolean {
+    return !task.isDone;
+}
+
 function getGlobalQueryFilters(): Filter[] {
     // The placeholder presents mechanism results in an exception being thrown
     // if we do not provide a location for the query source file,
@@ -38,7 +76,7 @@ function getGlobalQueryFilters(): Filter[] {
     return query.filters;
 }
 
-function applyFiltersToTask(globalQueryFilters: Filter[], task: Task, searchInfo: SearchInfo): boolean {
+function taskMatchesGlobalQuery(globalQueryFilters: Filter[], task: Task, searchInfo: SearchInfo): boolean {
     try {
         return globalQueryFilters.every((filter) => filter.filterFunction(task, searchInfo));
     } catch {
@@ -47,63 +85,82 @@ function applyFiltersToTask(globalQueryFilters: Filter[], task: Task, searchInfo
     }
 }
 
-export function findIncompleteTasksByDescriptionSubstring(tasks: readonly Task[], query: string): Task[] {
+// -----------------------------------------------------------------------
+// Helper functions for filtering on the query string.
+// -----------------------------------------------------------------------
+
+function createDescriptionMatcher(query: string): TaskDescriptionMatcher | null {
     if (query.trim() === '') {
-        return [];
+        return null;
+    }
+
+    if (getSettings().quickSearch.fuzzyMatching) {
+        return prepareFuzzySearch(query);
     }
 
     const normalizedQuery = query.toLowerCase();
-
-    return rankMatchingIncompleteTasksByDescription(tasks, (description) =>
-        description.toLowerCase().includes(normalizedQuery) ? { score: 0 } : null,
-    );
+    return (description: string) => (description.toLowerCase().includes(normalizedQuery) ? { score: 0 } : null);
 }
 
-export function findIncompleteTasksByFuzzyDescription(tasks: readonly Task[], query: string): Task[] {
-    if (query.trim() === '') {
-        return [];
+function getQuickSearchMatch(
+    task: Task,
+    globalQueryFilters: Filter[],
+    searchInfo: SearchInfo,
+    matchDescription: TaskDescriptionMatcher,
+): ScoredTaskMatch | null {
+    if (!shouldIncludeTaskInSearch(task)) {
+        return null;
     }
 
-    return rankMatchingIncompleteTasksByDescription(tasks, prepareFuzzySearch(query));
+    if (!taskMatchesGlobalQuery(globalQueryFilters, task, searchInfo)) {
+        return null;
+    }
+
+    const match = matchDescription(task.descriptionWithoutTags);
+    if (match === null) {
+        return null;
+    }
+
+    return { task, score: match.score };
 }
 
-export function findIncompleteTasksByDescription(tasks: readonly Task[], query: string): Task[] {
-    return getSettings().quickSearch.fuzzyMatching
-        ? findIncompleteTasksByFuzzyDescription(tasks, query)
-        : findIncompleteTasksByDescriptionSubstring(tasks, query);
-}
-
-export function rankMatchingIncompleteTasksByDescription(
+function findTaskMatches(
     tasks: readonly Task[],
+    searchInfo: SearchInfo,
     matchDescription: TaskDescriptionMatcher,
-): Task[] {
+): ScoredTaskMatch[] {
     // Many users will have defined a Global Query in their Tasks settings,
     // such as to tell Tasks to ignore tasks that are in their Template folder.
     // So we want Quick Search to only return tasks that match the filters in the Global Query.
     const globalQueryFilters = getGlobalQueryFilters();
-    const searchInfo = SearchInfo.fromAllTasks([...tasks]);
 
-    const matches = tasks
-        .filter((task) => !task.isDone && applyFiltersToTask(globalQueryFilters, task, searchInfo))
-        .map((task) => {
-            const match = matchDescription(task.descriptionWithoutTags);
-            return match === null ? null : { task, score: match.score };
-        })
-        .filter((match): match is { task: Task; score: number } => match !== null);
+    const matches: ScoredTaskMatch[] = [];
+    for (const task of tasks) {
+        const match = getQuickSearchMatch(task, globalQueryFilters, searchInfo, matchDescription);
+        if (match !== null) {
+            matches.push(match);
+        }
+    }
 
-    const defaultOrder = new Map(
-        sortResults(
-            matches.map((match) => match.task),
-            searchInfo,
-        ).map((task, index) => [task, index]),
-    );
-
-    return matches
-        .sort((a, b) => b.score - a.score || defaultOrder.get(a.task)! - defaultOrder.get(b.task)!)
-        .map((match) => match.task);
+    return matches;
 }
 
-function sortResults(results: Task[], searchInfo: SearchInfo): Task[] {
+// -----------------------------------------------------------------------
+// Helper functions for sorting the candidate tasks.
+// -----------------------------------------------------------------------
+
+function sortTaskMatches(matches: ScoredTaskMatch[], searchInfo: SearchInfo): ScoredTaskMatch[] {
+    const tasksInDefaultOrder = sortTasksByDescription(
+        matches.map((match) => match.task),
+        searchInfo,
+    );
+
+    const defaultOrder = new Map(tasksInDefaultOrder.map((task, index) => [task, index]));
+
+    return matches.sort((a, b) => b.score - a.score || defaultOrder.get(a.task)! - defaultOrder.get(b.task)!);
+}
+
+function sortTasksByDescription(results: Task[], searchInfo: SearchInfo): Task[] {
     // Sort the results by description, using same logic as the 'sort by description' instruction.
     const sorter = new DescriptionField().createNormalSorter();
     // And if the descriptions are identical, sort the tasks by the

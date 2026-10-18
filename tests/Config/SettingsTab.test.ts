@@ -1,10 +1,5 @@
-import { verifyAsJson } from 'approvals/lib/Providers/Jest/JestApprovals';
-import {
-    lastModalState,
-    recordedLegacySettings,
-    resetLastModalState,
-    resetRecordedLegacySettings,
-} from '../__mocks__/obsidian';
+import { verifyAsJson } from '@approval-tests/approvals/lib/Providers/Vitest/VitestApprovals';
+import { lastModalState, resetLastModalState } from '../__mocks__/obsidian';
 
 import { SettingsTab } from '../../src/Config/SettingsTab';
 
@@ -120,13 +115,13 @@ function serializeExtraButton(buttonFactory: Function): unknown {
 const plugin = {
     app: {} as any,
     manifest: { version: 'test-version' },
-    saveSettings: jest.fn(async () => {}),
-    getTasks: jest.fn(() => []),
+    saveSettings: vi.fn(async () => {}),
+    getTasks: vi.fn(() => []),
 } as any;
 
 const events = {
-    triggerReloadVault: jest.fn(),
-    triggerReloadOpenSearchResults: jest.fn(),
+    triggerReloadVault: vi.fn(),
+    triggerReloadOpenSearchResults: vi.fn(),
 } as any;
 
 describe('SettingsTab post-1.13', () => {
@@ -137,18 +132,5 @@ describe('SettingsTab post-1.13', () => {
         // TODO Show the 'Enable custom searches' modal.
         // TODO Show options in the 'Task count location' dropdown.
         verifyAsJson(serializeForApproval(settingsTab.getSettingDefinitions()));
-    });
-});
-
-describe('SettingsTab pre-1.13', () => {
-    const settingsTab = new SettingsTab({ plugin, events });
-
-    it('all settings', () => {
-        resetRecordedLegacySettings();
-        resetLastModalState();
-
-        settingsTab.display();
-
-        verifyAsJson(serializeForApproval(recordedLegacySettings));
     });
 });

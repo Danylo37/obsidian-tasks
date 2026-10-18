@@ -23,6 +23,11 @@ const getObsidianLanguage = (): string => {
     return storedLanguage || 'en';
 };
 
+// Force 'yarn extract-i18n' to keep translation strings that are only used indirectly.
+// i18n.t('taskFields.due')
+// i18n.t('taskFields.scheduled')
+// i18n.t('taskFields.start')
+
 // Define a function to initialize i18next
 export const initializeI18n = async () => {
     if (!isInitialized) {
@@ -60,7 +65,7 @@ export const initializeI18n = async () => {
 export const i18n = new Proxy(i18next, {
     get(target, prop): unknown {
         if (!isInitialized && prop === 't') {
-            /* This should never be reached in tests, as the following is called in jest.setup.ts:
+            /* This should never be reached in tests, as the following is called in vitest.setup.ts:
                     beforeAll(async () => {
                         await initializeI18n();
                     });

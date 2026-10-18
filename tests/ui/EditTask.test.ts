@@ -349,12 +349,12 @@ describe('Task editing', () => {
     describe('Status editing', () => {
         const today = '2024-02-29';
         beforeAll(() => {
-            jest.useFakeTimers();
-            jest.setSystemTime(new Date(today));
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date(today));
         });
 
         afterAll(() => {
-            jest.useRealTimers();
+            vi.useRealTimers();
         });
 
         afterEach(() => {
@@ -560,12 +560,12 @@ describe('Task editing', () => {
 
     describe('Date editing', () => {
         beforeEach(() => {
-            jest.useFakeTimers();
-            jest.setSystemTime(new Date('2024-11-27'));
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2024-11-27'));
         });
 
         afterEach(() => {
-            jest.useRealTimers();
+            vi.useRealTimers();
         });
 
         const line = '- [ ] simple';
@@ -629,14 +629,14 @@ describe('Task editing', () => {
  */
 describe('Exhaustive editing', () => {
     beforeEach(() => {
-        jest.useFakeTimers();
-        jest.setSystemTime(new Date('2023-07-18'));
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2023-07-18'));
     });
 
     afterEach(() => {
         GlobalFilter.getInstance().reset();
         resetSettings();
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     /**
@@ -843,8 +843,11 @@ describe('Buttons in the modal on mobile', () => {
 describe('Description auto-suggest', () => {
     function renderWithSuggestions(onSubmit: (updatedTasks: Task[]) => void = () => {}) {
         const task = new TaskBuilder().description('').build();
-        const { result, container } = renderAndCheckModal(task, onSubmit);
-        result.component.$set({
+        const { container } = render(EditTask, {
+            task,
+            statusOptions: StatusRegistry.getInstance().registeredStatuses,
+            onSubmit,
+            allTasks: [task],
             descriptionSuggestSources: { tags: () => ['home', 'shopping'], links: () => ['My Note', 'Other'] },
         });
         const description = getAndCheckRenderedDescriptionElement(container);
@@ -864,7 +867,7 @@ describe('Description auto-suggest', () => {
     }
 
     it('should suggest and insert a tag with Enter, without submitting', async () => {
-        const onSubmit = jest.fn();
+        const onSubmit = vi.fn();
         const { container, description } = renderWithSuggestions(onSubmit);
 
         await typeInDescription(description, 'buy #sho');

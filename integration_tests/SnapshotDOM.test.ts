@@ -62,8 +62,8 @@ describe('DOM snapshots', () => {
         // The following output is dependent on Obsidian window size
         //  <div class="markdown-preview-sizer markdown-preview-section" style="padding-bottom: 355px; min-height: 362px">
         const normalizedHTML = prettyHTML.replace(
-            /(<div class="markdown-preview-sizer markdown-preview-section" style="padding-bottom: )\d+px(; min-height: )\d+px(")/g,
-            '$1444px$2555px$3',
+            /(<div class="markdown-preview-sizer markdown-preview-section" style="padding-bottom: )\d+px(; min-height: )\d+px;*(")/g,
+            '$1444px$2555px;$3',
         );
         verifyHtml(normalizedHTML);
     });

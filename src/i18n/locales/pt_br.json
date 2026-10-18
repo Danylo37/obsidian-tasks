@@ -1,11 +1,11 @@
 {
   "common": {
-    "cancel": "",
-    "edit": "",
-    "moreInfo": "",
-    "okay": "",
-    "reload": "",
-    "save": ""
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "moreInfo": "Mais informações",
+    "okay": "OK",
+    "reload": "Recarregar",
+    "save": "Salvar"
   },
   "main": {
     "loadingPlugin": "Carregando plugin: {{name}} v{{version}}",
@@ -35,23 +35,23 @@
       },
       "fixErrorsBeforeSaving": "Corrija os erros antes de salvar.",
       "title": {
-        "editCoreStatus": "",
-        "editCustomStatus": ""
+        "editCoreStatus": "Editar status principal",
+        "editCustomStatus": "Editar status personalizado"
       }
     },
     "editPresetModal": {
       "name": {
-        "duplicate": "",
-        "name": "",
-        "placeholder": "",
-        "required": ""
+        "duplicate": "Já existe uma predefinição com este nome",
+        "name": "Nome",
+        "placeholder": "ex.: tarefas abertas",
+        "required": "Obrigatório"
       },
       "query": {
-        "description": "",
-        "name": "",
-        "placeholder": ""
+        "description": "Opcional. Você pode preencher isso depois.",
+        "name": "Consulta",
+        "placeholder": "not done\npath includes Work"
       },
-      "title": ""
+      "title": "Editar predefinição"
     }
   },
   "notices": {
@@ -128,7 +128,6 @@
   },
   "settings": {
     "autoSuggest": {
-      "heading": "Autocompletar",
       "maxSuggestions": {
         "description": "Quantas sugestões devem ser mostradas quando o menu de autocompletar aparecer (incluindo a opção \"⏎\").",
         "name": "Número máximo de sugestões automáticas para exibir"
@@ -142,7 +141,6 @@
         "name": "Autocompletar o conteúdo da tarefa"
       }
     },
-    "changeRequiresRestart": "REQUER REINICIALIZAÇÃO.",
     "dates": {
       "cancelledDate": {
         "description": "A ativação desta opção adicionará um carimbo de data/hora ❌ YYYY-MM-DD no final quando uma tarefa for alternada para cancelada.",
@@ -163,8 +161,7 @@
       "scheduledDate": {
         "extraFormat": {
           "description": {
-            "line1": "Um formato de data adicional que o plugin Tasks reconhecerá ao usar o nome do arquivo como a data Agendada para tarefas sem data.",
-            "line2": "Referência de Sintaxe"
+            "line1": "Um formato de data adicional que o plugin Tasks reconhecerá ao usar o nome do arquivo como a data Agendada para tarefas sem data."
           },
           "name": "Formato adicional de data do nome do arquivo como data Agendada para tarefas sem data",
           "placeholder": "exemplo: MMM DD YYYY"
@@ -188,8 +185,7 @@
       "accessKeys": {
         "description": "Se as teclas de acesso (atalhos de teclado) de vários controles nas caixas de diálogo entrarem em conflito com os atalhos de teclado do sistema ou com recursos de tecnologia assistiva importantes para você, é possível desativá-los aqui.",
         "name": "Fornecer teclas de acesso nas caixas de diálogo"
-      },
-      "heading": "Diálogos"
+      }
     },
     "format": {
       "description": {
@@ -210,10 +206,9 @@
           "line3": "Por exemplo, se você definir o filtro global como <code>#task</code>, o plugin Tasks só manipulará os itens de checklist com a tag <code>#task</code>.",
           "line4": "Outros itens continuarão sendo itens normais de checklist e não aparecerão nas consultas nem receberão data de conclusão."
         },
-        "name": "Filtro global",
+        "name": "Filtro global de tarefas",
         "placeholder": "ex. #task ou TODO"
       },
-      "heading": "Filtro global de tarefas",
       "removeFilter": {
         "description": "A ativação desta opção removerá a string que você definiu como filtro global da descrição da tarefa ao exibi-la.",
         "name": "Remover filtro global da descrição"
@@ -224,14 +219,32 @@
       "query": {
         "description": "Uma consulta que é incluída automaticamente no início de cada bloco do Tasks no cofre. Útil para adicionar filtros padrão ou opções de layout.",
         "placeholder": "Por exemplo...\npath does not include _templates/\nlimit 300\nshow urgency",
-        "shortDescription": ""
+        "shortDescription": "Instruções incluídas automaticamente no início de cada bloco do Tasks."
+      }
+    },
+    "postponeButton": {
+      "heading": "Botão de adiar",
+      "postponeDateField": {
+        "description": "Qual campo de data o botão de adiar (⏩) atualiza. Para opções com várias datas, será definida a primeira data da sequência que estiver presente na tarefa.",
+        "name": "Campo de data do botão de adiar",
+        "options": {
+          "due": "Sempre $t(taskFields.due)",
+          "due-scheduled-start": "$t(taskFields.due) → $t(taskFields.scheduled) → $t(taskFields.start)",
+          "scheduled": "Sempre $t(taskFields.scheduled)",
+          "scheduled-due-start": "$t(taskFields.scheduled) → $t(taskFields.due) → $t(taskFields.start)",
+          "start": "Sempre $t(taskFields.start)",
+          "start-scheduled-due": "$t(taskFields.start) → $t(taskFields.scheduled) → $t(taskFields.due)"
+        }
       }
     },
     "presets": {
       "buttons": {
         "addNewPreset": "Adicionar nova predefinição"
       },
-      "emptyState": "",
+      "emptyState": "Nenhuma predefinição ainda.",
+      "filter": {
+        "placeholder": "Filtrar predefinições…"
+      },
       "line1": "Você pode definir instruções nomeadas aqui, que podem ser reutilizadas em várias consultas. Uma predefinição chamada '{{name}}' pode ser usada em consultas do Tasks com '{{instruction1}}' ou '{{instruction2}}'.",
       "line2": "Quaisquer consultas do Tasks abertas são recarregadas automaticamente quando as predefinições são editadas.",
       "name": "Predefinições (Presets)"
@@ -251,7 +264,6 @@
       }
     },
     "searchResults": {
-      "heading": "Resultados da pesquisa",
       "taskCountLocation": {
         "description": "Escolha se a contagem de tarefas deve ser mostrada na parte superior ou inferior dos resultados da consulta.",
         "name": "Localização da contagem de tarefas",
@@ -264,26 +276,26 @@
     "searches": {
       "enableCustomSearches": {
         "confirm": {
-          "acknowledge": "",
-          "enable": ""
+          "acknowledge": "Eu entendo os riscos",
+          "enable": "Ativar"
         },
         "description": {
-          "line1": "",
-          "line2": "",
-          "line3": "",
-          "line4": ""
+          "line1": "Ativa '{{filterByFunction}}', '{{sortByFunction}}' e '{{groupByFunction}}', que executam JavaScript em consultas do Tasks.",
+          "line2": "JavaScript malicioso em uma consulta do Tasks ou em um arquivo Markdown pode ser executado dentro do Obsidian e acessar ou modificar o conteúdo do seu cofre, arquivos locais ou outros recursos do sistema.",
+          "line3": "Ative somente se você confia no conteúdo atual e futuro deste cofre, incluindo arquivos que você possa baixar, copiar ou sincronizar de outras pessoas mais tarde.",
+          "line4": "Esta configuração é armazenada apenas neste dispositivo; ative-a separadamente em cada dispositivo em que você usa este cofre."
         },
-        "name": ""
+        "name": "Ativar pesquisas personalizadas"
       },
-      "heading": ""
+      "heading": "Pesquisas"
     },
     "seeTheDocumentation": "Veja a documentação",
     "statuses": {
       "buttons": {
-        "addStatus": "",
+        "addStatus": "Adicionar status",
         "importFromTheme": {
-          "description": "",
-          "name": ""
+          "description": "Adicione os status suportados por um tema ou snippet de CSS.",
+          "name": "Importar de um tema"
         }
       },
       "collections": {
@@ -291,11 +303,8 @@
         "auraTheme": "Tema Aura",
         "borderTheme": "Tema Border",
         "buttons": {
-          "addCollection": {
-            "name": "{{themeName}}: Adicionar {{numberOfStatuses}} Status suportados"
-          },
           "importCollection": {
-            "name": ""
+            "name": "{{themeName}} ({{numberOfStatuses}} status)"
           }
         },
         "ebullientworksTheme": "Tema Ebullientworks",
@@ -320,14 +329,11 @@
       "customStatuses": {
         "buttons": {
           "addAllUnknown": {
-            "description": "",
+            "description": "Adicione quaisquer símbolos de status encontrados no seu cofre, mas ainda não configurados aqui.",
             "name": "Adicionar Todos os Tipos de Status Desconhecidos"
           },
-          "addNewStatus": {
-            "name": "Adicionar Novo Status de Tarefa"
-          },
           "resetCustomStatuses": {
-            "description": "",
+            "description": "Descarte todos os status personalizados e restaure os padrões.",
             "name": "Redefinir Tipos de Status Personalizados para os Padrões"
           }
         },
@@ -337,27 +343,32 @@
           "line3": "<b>Nota:</b> Qualquer status com o mesmo símbolo de um status anterior será ignorado. Você pode confirmar os status que foram realmente carregados executando o comando 'Criar ou editar tarefa' e olhando a lista suspensa de Status.",
           "line4": "Veja a documentação para começar!"
         },
-        "emptyState": "",
+        "emptyState": "Nenhum status personalizado ainda.",
         "heading": "Status Personalizados"
       },
       "filter": {
-        "placeholder": ""
+        "placeholder": "Filtrar status…"
       },
       "heading": "Status das Tarefas",
-      "reloadRequired": "",
+      "reloadRequired": "As alterações entram em vigor após recarregar.",
       "types": {
-        "cancelled": "",
-        "done": "",
-        "empty": "",
-        "inProgress": "",
-        "nonTask": "",
-        "onHold": "",
-        "todo": ""
+        "cancelled": "Cancelado",
+        "done": "Concluído",
+        "empty": "Vazio",
+        "inProgress": "Em andamento",
+        "nonTask": "Não é tarefa",
+        "onHold": "Em espera",
+        "todo": "A fazer"
       },
-      "unnamed": ""
+      "unnamed": "(sem nome)"
     },
     "taskEntry": {
-      "heading": ""
+      "heading": "Entrada de tarefa"
     }
+  },
+  "taskFields": {
+    "due": "Vencimento",
+    "scheduled": "Agendamento",
+    "start": "Início"
   }
 }

@@ -8,7 +8,7 @@ publish: true
 
 Changes to most of the Tasks settings take immediate effect.
 
-Regrettably, a few require the vault to be reloaded. These settings are marked with `REQUIRES RESTART`.
+Regrettably, a few require the vault to be reloaded. Tasks will show a 'Reload' button automatically if those settings are changed.
 
 ## Available settings
 
@@ -21,6 +21,7 @@ For convenience, here is a list of all those documentation pages (in the order t
 - [[Global Query#Settings|Global Query]]
 - [[Status Settings#Overview|Status Settings]]
 - [[Dates#Date-tracking settings|Dates]]
+- [[Postponing#Which date field is edited?|Postpone]]
 - [[Use Filename as Default Date#Settings|Use Filename as Default Date]]
 - [[Recurring Tasks#Recurrence Settings|Recurring Tasks]]
 - [[Auto-Suggest#Settings|Auto-Suggest]]
