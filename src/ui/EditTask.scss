@@ -112,6 +112,11 @@
         margin-left: .5em;
     }
 
+    // Android draws the date picker's calendar icon over its 'mm/dd/yyyy' text unless there is room for it
+    .is-mobile & .tasks-modal-date-editor-picker {
+        padding-inline-start: calc(var(--size-4-2) + 1.25em);
+    }
+
     .tasks-modal-parsed-date {
         grid-column: 3;
         font-size: var(--font-ui-small);
